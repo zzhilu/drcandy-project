@@ -1,0 +1,16 @@
+
+*.o
+*.exe
+*.out
+
+# build
+build/
+
+# VS
+.vs/
+visual_studio/
+
+.DS_Store
+
+
+*.log
