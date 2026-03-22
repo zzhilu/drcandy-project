@@ -4,7 +4,20 @@
 
 Board::Board(int width, int height)
 {
-    // Implement your code here
+    m_width = width;
+    m_height = height;
+
+    m_cells.resize(m_height);
+
+    for (int y = 0; y < m_height; y++)
+    {
+        m_cells[y].resize(m_width);
+
+        for (int x = 0; x < m_width; x++)
+        {
+            m_cells[y][x] = nullptr;
+        }
+    }
 }
 
 Board::~Board()
