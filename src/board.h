@@ -88,8 +88,9 @@ public:
     int getHeight() const;
 
 private:
-
-    /// Students can add as many protected methods and attributes as needed.
+    int m_width;
+    int m_height;
+    vector<vector<Candy*> > m_cells;
 };
 
 #endif
