@@ -15,27 +15,35 @@ Board::~Board()
 
 Candy* Board::getCell(int x, int y) const
 {
-    // Implement your code here
-    return nullptr;
+    if (x < 0 || x >= m_width || y < 0 || y >= m_height)
+    {
+        return nullptr;
+    }
+
+    return m_cells[y][x];
 }
 
 void Board::setCell(Candy* candy, int x, int y)
 {
-    // Implement your code here
+    
+    if (x < 0 || x >= m_width || y < 0 || y >= m_height)
+    {
+        return;
+    }
+
+    m_cells[y][x] = candy;
 }
 
 
 int Board::getWidth() const
 {
-    // Implement your code here
-    return -1;
+    return m_width;
 }
 
 
 int Board::getHeight() const
 {
-    // Implement your code here
-    return -1;
+    return m_height;
 }
 
 bool Board::shouldExplode(int x, int y) const
