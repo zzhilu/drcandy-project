@@ -4,14 +4,12 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-/// Imports can be added as needed.
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "candy.h"
 
-/// Default board dimensions
+ /// Default board dimensions
 const int DEFAULT_BOARD_WIDTH = 10;
 const int DEFAULT_BOARD_HEIGHT = 10;
 
@@ -64,11 +62,11 @@ public:
     bool load(const std::string& input_path);
 
     /**
-     * Get a reference to the candy piece at the given coordinates if there is one. 
-     * 
+     * Get a reference to the candy piece at the given coordinates if there is one.
+     *
      * @param x 0-indexed, left to right, x coordinate of the cell
      * @param y 0-indexed, top to bottom, y coordinate of the cell
-     * @return a pointer to the candy at the given coordinates, 
+     * @return a pointer to the candy at the given coordinates,
      *   if the coordinates are valid and the cell is not empty; nullptr otherwise.
      */
     Candy* getCell(int x, int y) const;
@@ -90,7 +88,7 @@ public:
 private:
     int m_width;
     int m_height;
-    vector<vector<Candy*> > m_cells;
+    std::vector<std::vector<Candy*> > m_cells;
 };
 
 #endif
