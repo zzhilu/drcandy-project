@@ -84,11 +84,15 @@ public:
 
     /// Get the board height
     int getHeight() const;
+    void setOwnedCandy(Candy* candy, int x, int y);
 
 private:
     int m_width;
     int m_height;
-    std::vector<std::vector<Candy*> > m_cells;
+    Candy** m_cells;
+    std::vector<Candy*> m_candyPropios;
+
+
 };
 
 #endif

@@ -7,43 +7,125 @@ Board::Board(int width, int height)
 {
     m_width = width;
     m_height = height;
+   
+    m_cells = new Candy * [m_width * m_height];
 
-    m_cells.resize(m_height);
-
-    for (int y = 0; y < m_height; y++)
+    if (width <= 0)
     {
-        m_cells[y].resize(m_width);
+        width = DEFAULT_BOARD_WIDTH;
+    }
 
-        for (int x = 0; x < m_width; x++)
-        {
-            m_cells[y][x] = nullptr;
-        }
+    if (height <= 0)
+    {
+        height = DEFAULT_BOARD_HEIGHT;
+    }
+
+    for (int i = 0; i < m_width * m_height; i++)
+    {
+        m_cells[i] = nullptr;
     }
 }
 
 Board::~Board()
 {
-    // Primera entrega: no ownership of dynamic memory here
+    for (int i = 0; i < static_cast<int>(m_candyPropios.size()); i++)
+    {
+        delete m_candyPropios[i];
+    }
+
+    m_candyPropios.clear();
+
+    delete[] m_cells;
+    m_cells = nullptr;
 }
+
+Board::Board(const Board& other)
+{
+    m_width = other.m_width;
+    m_height = other.m_height;
+    m_cells = new Candy * [m_width * m_height];
+
+    for (int i = 0; i < m_width * m_height; i++)
+    {
+        m_cells[i] = nullptr;
+    }
+
+    for (int y = 0; y < m_height; y++)
+    {
+        for (int x = 0; x < m_width; x++)
+        {
+
+            Candy* otherCandy = other.getCell(x, y);
+            if (otherCandy != nullptr)
+            {
+                Candy* newCandy = new Candy(otherCandy->getType());
+                setOwnedCandy(newCandy, x, y);
+
+            }
+        }
+
+    }
+}
+
+Board& Board::operator=(const Board& other) { 
+
+    if (this != &other) {
+
+        for (int i = 0; i < static_cast<int>(m_candyPropios.size()); i++)
+        {
+            delete m_candyPropios[i];
+        }
+
+        m_candyPropios.clear();
+        delete[] m_cells;
+        m_width = other.m_width;
+        m_height = other.m_height;
+
+        m_cells = new Candy * [m_width * m_height];
+
+        for (int y = 0; y < m_height; y++)
+        {
+            for (int x = 0; x < m_width; x++)
+            {
+                Candy* otherCandy = other.getCell(x, y);
+
+                if (otherCandy != nullptr)
+                {
+                    Candy* newCandy = new Candy(otherCandy->getType());
+                    setOwnedCandy(newCandy, x, y);
+                }
+
+            }
+
+        }
+    
+    }
+
+
+    return *this;
+}
+
 
 Candy* Board::getCell(int x, int y) const
 {
+    Candy* candy = nullptr;
     if (x < 0 || x >= m_width || y < 0 || y >= m_height)
     {
         return nullptr;
     }
+    candy = m_cells[y * m_width + x];
 
-    return m_cells[y][x];
+    return candy;
 }
 
 void Board::setCell(Candy* candy, int x, int y)
 {
-    if (x < 0 || x >= m_width || y < 0 || y >= m_height)
+    
+    if (x >= 0 && x < m_width && y >= 0 && y < m_height)
     {
-        return;
+        m_cells[y * m_width + x] = candy;
     }
 
-    m_cells[y][x] = candy;
 }
 
 int Board::getWidth() const
@@ -55,6 +137,21 @@ int Board::getHeight() const
 {
     return m_height;
 }
+
+void Board::setOwnedCandy(Candy* candy, int x, int y)
+{
+    if (x >= 0 && x < m_width && y >= 0 && y < m_height)
+    {
+        m_cells[y * m_width + x] = candy;
+        m_candyPropios.push_back(candy);
+
+    }
+    else
+    {
+        delete candy;
+    }
+}
+
 
 bool Board::shouldExplode(int x, int y) const
 {
@@ -258,8 +355,10 @@ std::vector<Candy*> Board::explodeAndDrop()
                 {
                     if (toExplode[y][x])
                     {
-                        exploded.push_back(m_cells[y][x]);
-                        m_cells[y][x] = nullptr;
+                        int index = y * m_width + x;
+
+                        exploded.push_back(m_cells[index]);
+                        m_cells[index] = nullptr;
                     }
                 }
             }
@@ -271,13 +370,17 @@ std::vector<Candy*> Board::explodeAndDrop()
 
                 for (int y = m_height - 1; y >= 0; y--)
                 {
-                    if (m_cells[y][x] != nullptr)
+                    int currentIndex = y * m_width + x;
+
+                    if (m_cells[currentIndex] != nullptr)
                     {
-                        m_cells[writeY][x] = m_cells[y][x];
+                        int writeIndex = writeY * m_width + x;
+
+                        m_cells[writeIndex] = m_cells[currentIndex];
 
                         if (writeY != y)
                         {
-                            m_cells[y][x] = nullptr;
+                            m_cells[currentIndex] = nullptr;
                         }
 
                         writeY--;
@@ -286,7 +389,8 @@ std::vector<Candy*> Board::explodeAndDrop()
 
                 while (writeY >= 0)
                 {
-                    m_cells[writeY][x] = nullptr;
+                    int index = writeY * m_width + x;
+                    m_cells[index] = nullptr;
                     writeY--;
                 }
             }
@@ -312,10 +416,12 @@ bool Board::dump(const std::string& output_path) const
         for (int x = 0; x < m_width; x++)
         {
             char ch = '.';
+            int index = y * m_width + x;
+            Candy* candy = m_cells[index];
 
-            if (m_cells[y][x] != nullptr)
+            if (candy != nullptr)
             {
-                CandyType type = m_cells[y][x]->getType();
+                CandyType type = candy->getType();
 
                 if (type == CandyType::TYPE_RED)
                 {
@@ -360,7 +466,7 @@ bool Board::dump(const std::string& output_path) const
 bool Board::load(const std::string& input_path)
 {
     std::ifstream file(input_path);
-
+    bool result = true;
     if (!file.is_open())
     {
         return false;
@@ -379,21 +485,15 @@ bool Board::load(const std::string& input_path)
         return false;
     }
 
-    std::vector<std::vector<Candy*> > newCells;
-    newCells.resize(newHeight);
+    Candy** newCells = new Candy * [newWidth * newHeight];
+    std::vector<Candy*> newOwnedCandies;
 
-    for (int y = 0; y < newHeight; y++)
+    for (int i = 0; i < newWidth * newHeight; i++)
     {
-        newCells[y].resize(newWidth);
+        newCells[i] = nullptr;
     }
 
-    // Static candies: they stay alive after load() finishes
-    static Candy redCandy(CandyType::TYPE_RED);
-    static Candy blueCandy(CandyType::TYPE_BLUE);
-    static Candy greenCandy(CandyType::TYPE_GREEN);
-    static Candy yellowCandy(CandyType::TYPE_YELLOW);
-    static Candy purpleCandy(CandyType::TYPE_PURPLE);
-    static Candy orangeCandy(CandyType::TYPE_ORANGE);
+
 
     for (int y = 0; y < newHeight; y++)
     {
@@ -402,47 +502,70 @@ bool Board::load(const std::string& input_path)
             char ch;
             if (!(file >> ch))
             {
-                return false;
+                result = false;
             }
-
+            Candy* candy = nullptr;
             if (ch == '.')
             {
-                newCells[y][x] = nullptr;
+                candy = nullptr;
             }
             else if (ch == 'R')
             {
-                newCells[y][x] = &redCandy;
+                candy = new Candy(CandyType::TYPE_RED);
+
             }
             else if (ch == 'B')
             {
-                newCells[y][x] = &blueCandy;
+                candy = new Candy(CandyType::TYPE_BLUE);
             }
             else if (ch == 'G')
             {
-                newCells[y][x] = &greenCandy;
+                candy = new Candy(CandyType::TYPE_GREEN);
             }
             else if (ch == 'Y')
             {
-                newCells[y][x] = &yellowCandy;
+                candy = new Candy(CandyType::TYPE_YELLOW);
             }
             else if (ch == 'P')
             {
-                newCells[y][x] = &purpleCandy;
+                candy = new Candy(CandyType::TYPE_PURPLE);
             }
             else if (ch == 'O')
             {
-                newCells[y][x] = &orangeCandy;
+                candy = new Candy(CandyType::TYPE_ORANGE);
             }
             else
             {
-                return false;
+                result = false;
+            }
+            if (result)
+            {
+                int index = y * newWidth + x;
+
+                newCells[index] = candy;
+
+                if (candy != nullptr)
+                {
+                    newOwnedCandies.push_back(candy);
+                }
             }
         }
     }
+    if (result)
+    {
+        for (int i = 0; i < static_cast<int>(m_candyPropios.size()); i++)
+        {
+            delete m_candyPropios[i];
+        }
+        m_candyPropios.clear();
 
-    m_width = newWidth;
-    m_height = newHeight;
-    m_cells = newCells;
+        delete[] m_cells;
 
-    return true;
+        m_width = newWidth;
+        m_height = newHeight;
+        m_cells = newCells;
+        m_candyPropios = newOwnedCandies;
+      
+    }
+    return result;
 }

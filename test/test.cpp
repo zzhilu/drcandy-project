@@ -506,7 +506,7 @@ bool test()
         }
     }
 
-    // 14. load con archivo inexistente
+    // 14. load con archivo inexistente new
     {
         Board b(2, 2);
         bool ok = true;
