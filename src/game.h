@@ -6,7 +6,9 @@
 
 #include "graphics.h"
 #include "controller.h"
-
+#include "board.h"
+#include "block.h"
+#include "util.h"
 /**
  * Main game class: keep track of the game state it. 
  * When run_graphic_game() is called, the game loop will call
@@ -53,5 +55,14 @@ public:
 
     /// @return true if this game is equal to the other game (same board state and falling block)
     bool operator==(const Game& other) const;
+
+private:
+    Board m_board;
+    Block m_block;
+
+    int m_frameCounter;
+    int m_score;
+    bool m_gameOver;
+
 };
 #endif

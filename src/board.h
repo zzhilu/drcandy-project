@@ -24,7 +24,8 @@ class Board
 public:
     /// Initialize a board of the given dimensions.
     Board(int width = DEFAULT_BOARD_WIDTH, int height = DEFAULT_BOARD_HEIGHT);
-
+    Board(const Board& other);
+    Board& operator=(const Board& other);
     /// Free all resources managed by the board
     ~Board();
 
@@ -81,6 +82,8 @@ public:
 
     /// Get the board width
     int getWidth() const;
+
+   
 
     /// Get the board height
     int getHeight() const;

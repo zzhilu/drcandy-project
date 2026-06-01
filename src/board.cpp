@@ -82,7 +82,10 @@ Board& Board::operator=(const Board& other) {
         m_height = other.m_height;
 
         m_cells = new Candy * [m_width * m_height];
-
+        for (int i = 0; i < m_width * m_height; i++)
+        {
+            m_cells[i] = nullptr;
+        }
         for (int y = 0; y < m_height; y++)
         {
             for (int x = 0; x < m_width; x++)

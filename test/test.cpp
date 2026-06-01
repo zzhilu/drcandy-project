@@ -1,9 +1,12 @@
-#include <filesystem>
+#include <cstdio>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "board.h"
+#include "block.h"
 #include "candy.h"
+#include "game.h"
 #include "test.h"
 #include "util.h"
 
@@ -159,7 +162,7 @@ bool test()
         }
     }
 
-    // 6. shouldExplode en celda vacia 
+    // 6. shouldExplode en celda vacia y casos invalidos
     {
         Board b(4, 3);
         bool ok = true;
@@ -297,7 +300,7 @@ bool test()
         }
     }
 
-    // 10. Explosion diagonal 
+    // 10. Explosion diagonal secundaria
     {
         Board b(5, 5);
         Candy c1(CandyType::TYPE_YELLOW);
@@ -426,7 +429,7 @@ bool test()
         }
     }
 
-    // 13. dump y load
+    // 13. dump y load Board
     {
         Board b(4, 3);
         Candy red(CandyType::TYPE_RED);
@@ -440,7 +443,7 @@ bool test()
         b.setCell(&purple, 3, 2);
 
         string path = getDataDirPath() + "/test_board.txt";
-        std::filesystem::remove(path);
+        remove(path.c_str());
 
         if (!b.dump(path))
         {
@@ -496,9 +499,9 @@ bool test()
             ok = false;
         }
 
-        std::filesystem::remove(path);
+        remove(path.c_str());
 
-        mostrarResultado("dump y load", ok, total, aprobados);
+        mostrarResultado("dump y load Board", ok, total, aprobados);
 
         if (!ok)
         {
@@ -506,13 +509,13 @@ bool test()
         }
     }
 
-    // 14. load con archivo inexistente new
+    // 14. load con archivo inexistente
     {
         Board b(2, 2);
         bool ok = true;
 
         string path = getDataDirPath() + "/file_that_does_not_exist_12345.txt";
-        std::filesystem::remove(path);
+        remove(path.c_str());
 
         if (b.load(path))
         {
@@ -520,6 +523,218 @@ bool test()
         }
 
         mostrarResultado("load con archivo inexistente", ok, total, aprobados);
+
+        if (!ok)
+        {
+            todoOk = false;
+        }
+    }
+
+    // 15. Copy constructor Board
+    {
+        Board b(3, 3);
+        Candy red(CandyType::TYPE_RED);
+        bool ok = true;
+
+        b.setCell(&red, 1, 1);
+
+        Board copy(b);
+
+        if (copy.getWidth() != 3 || copy.getHeight() != 3)
+        {
+            ok = false;
+        }
+
+        if (copy.getCell(1, 1) == nullptr)
+        {
+            ok = false;
+        }
+        else if (copy.getCell(1, 1)->getType() != CandyType::TYPE_RED)
+        {
+            ok = false;
+        }
+
+        b.setCell(nullptr, 1, 1);
+
+        if (copy.getCell(1, 1) == nullptr)
+        {
+            ok = false;
+        }
+
+        mostrarResultado("Copy constructor Board", ok, total, aprobados);
+
+        if (!ok)
+        {
+            todoOk = false;
+        }
+    }
+
+    // 16. Operator= Board
+    {
+        Board b(3, 3);
+        Board assigned(1, 1);
+        Candy blue(CandyType::TYPE_BLUE);
+        bool ok = true;
+
+        b.setCell(&blue, 2, 2);
+
+        assigned = b;
+
+        if (assigned.getWidth() != 3 || assigned.getHeight() != 3)
+        {
+            ok = false;
+        }
+
+        if (assigned.getCell(2, 2) == nullptr)
+        {
+            ok = false;
+        }
+        else if (assigned.getCell(2, 2)->getType() != CandyType::TYPE_BLUE)
+        {
+            ok = false;
+        }
+
+        b.setCell(nullptr, 2, 2);
+
+        if (assigned.getCell(2, 2) == nullptr)
+        {
+            ok = false;
+        }
+
+        mostrarResultado("Operator= Board", ok, total, aprobados);
+
+        if (!ok)
+        {
+            todoOk = false;
+        }
+    }
+
+    // 17. Block inicial
+    {
+        Block block;
+        bool ok = true;
+
+        if (block.getX() != 5)
+        {
+            ok = false;
+        }
+
+        if (block.getY() != -3)
+        {
+            ok = false;
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (block.getCandy(i) == nullptr)
+            {
+                ok = false;
+            }
+        }
+
+        mostrarResultado("Block inicial", ok, total, aprobados);
+
+        if (!ok)
+        {
+            todoOk = false;
+        }
+    }
+
+    // 18. Movimiento Block
+    {
+        Block block;
+        bool ok = true;
+
+        block.moverIzquierda();
+
+        if (block.getX() != 4)
+        {
+            ok = false;
+        }
+
+        block.moverDerecha();
+
+        if (block.getX() != 5)
+        {
+            ok = false;
+        }
+
+        block.caer();
+
+        if (block.getY() != -2)
+        {
+            ok = false;
+        }
+
+        mostrarResultado("Movimiento Block", ok, total, aprobados);
+
+        if (!ok)
+        {
+            todoOk = false;
+        }
+    }
+
+    // 19. Girar Block
+    {
+        Block block;
+        bool ok = true;
+
+        block.setCandy(0, CandyType::TYPE_RED);
+        block.setCandy(1, CandyType::TYPE_BLUE);
+        block.setCandy(2, CandyType::TYPE_GREEN);
+
+        block.girar();
+
+        if (block.getCandy(0)->getType() != CandyType::TYPE_BLUE)
+        {
+            ok = false;
+        }
+
+        if (block.getCandy(1)->getType() != CandyType::TYPE_GREEN)
+        {
+            ok = false;
+        }
+
+        if (block.getCandy(2)->getType() != CandyType::TYPE_RED)
+        {
+            ok = false;
+        }
+
+        mostrarResultado("Girar Block", ok, total, aprobados);
+
+        if (!ok)
+        {
+            todoOk = false;
+        }
+    }
+
+    // 20. Game dump, load y operator==
+    {
+        Game game1;
+        Game game2;
+        bool ok = true;
+
+        string path = getDataDirPath() + "/test_game.txt";
+        remove(path.c_str());
+
+        if (!game1.dump(path))
+        {
+            ok = false;
+        }
+
+        if (!game2.load(path))
+        {
+            ok = false;
+        }
+
+        if (!(game1 == game2))
+        {
+            ok = false;
+        }
+
+        remove(path.c_str());
+
+        mostrarResultado("Game dump, load y operator==", ok, total, aprobados);
 
         if (!ok)
         {

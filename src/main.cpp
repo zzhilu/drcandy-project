@@ -16,6 +16,7 @@ int main(int argc, const char* argv[])
 
     // The following code runs the graphic part
     Game game;
+    game.load(getDataDirPath() + "/save.txt");
     // Run until ESC is pressed
     game.run();
     return 0;
